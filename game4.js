@@ -353,3 +353,29 @@ canvas.addEventListener("pointerup", onPointer);
 canvas.addEventListener("pointerleave", () => { inputs.down = false; });
 document.addEventListener("visibilitychange", () => { if (document.hidden) inputs.down = false; });
 statusEl.textContent = "BEST 0";
+
+const shareBtn=document.getElementById("shareBtn");
+const shareMask=document.getElementById("shareMask");
+const sharePanel=document.getElementById("sharePanel");
+const shareLink=document.getElementById("shareLink");
+const qrImg=document.getElementById("qrImg");
+const copyBtn=document.getElementById("copyBtn");
+const closeShare=document.getElementById("closeShare");
+function openShare(){
+  const url=location.href;
+  shareLink.value=url;
+  const api="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data="+encodeURIComponent(url);
+  qrImg.src=api;
+  shareMask.style.display="";
+  sharePanel.style.display="";
+}
+function closeSharePanel(){
+  shareMask.style.display="none";
+  sharePanel.style.display="none";
+}
+if(shareBtn){
+  shareBtn.addEventListener("click",openShare);
+  shareMask.addEventListener("click",closeSharePanel);
+  closeShare.addEventListener("click",closeSharePanel);
+  copyBtn.addEventListener("click",async()=>{try{await navigator.clipboard.writeText(shareLink.value)}catch(e){shareLink.select();document.execCommand&&document.execCommand("copy")}})
+}

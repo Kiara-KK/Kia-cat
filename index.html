@@ -11,11 +11,22 @@
     <div class="hud">
       <div id="score">0</div>
       <div id="status"></div>
+      <button id="shareBtn" class="share-btn" title="分享给朋友">分享</button>
     </div>
     <canvas id="game" width="800" height="220"></canvas>
     <div id="overlay">
       <div class="title">Kia's Cat · 点击或按空格开始</div>
       <div class="tip">上箭头/空格跳跃，可二段跳；长按可更高</div>
+    </div>
+    <div id="shareMask" class="share-mask" style="display:none"></div>
+    <div id="sharePanel" class="share-panel" style="display:none">
+      <div class="share-title">分享 Kia's Cat</div>
+      <img id="qrImg" alt="QR" width="180" height="180"/>
+      <div class="share-row">
+        <input id="shareLink" class="share-link" readonly />
+        <button id="copyBtn" class="share-copy">复制链接</button>
+      </div>
+      <button id="closeShare" class="share-close">关闭</button>
     </div>
   </div>
   <script src="game4.js"></script>
