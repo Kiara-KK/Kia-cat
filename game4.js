@@ -87,10 +87,12 @@ class Cat {
     ctx.fillStyle = "#111";
 
     ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.bezierCurveTo(-12, -6, -12, -26, -10, -42);
-    ctx.bezierCurveTo(-8, -58, 8, -58, 10, -42);
-    ctx.bezierCurveTo(12, -26, 12, -6, 0, 0);
+    ctx.moveTo(-12, 0);
+    ctx.quadraticCurveTo(-6, 5, 0, 3);     // 底部中间略向下凸
+    ctx.quadraticCurveTo(6, 5, 12, 0);
+    ctx.bezierCurveTo(12, -8, 12, -26, 10, -42);
+    ctx.bezierCurveTo(8, -58, -8, -58, -10, -42);
+    ctx.bezierCurveTo(-12, -26, -12, -8, -12, 0);
     ctx.closePath();
     ctx.fill();
 
@@ -99,16 +101,14 @@ class Cat {
     ctx.fill();
 
     ctx.beginPath();
-    ctx.moveTo(-6, -76);
-    ctx.lineTo(-2, -88);
-    ctx.lineTo(2, -76);
+    ctx.arc(0, -66, 12, -3.00, -2.10, false); // 更宽的底部弧线
+    ctx.lineTo(-8, -82);                      // 更低更钝的耳尖
     ctx.closePath();
     ctx.fill();
 
     ctx.beginPath();
-    ctx.moveTo(6, -76);
-    ctx.lineTo(2, -88);
-    ctx.lineTo(-2, -76);
+    ctx.arc(0, -66, 12, -1.04, -0.10, false); // 对称加宽
+    ctx.lineTo(8, -82);                       // 更低更钝的耳尖
     ctx.closePath();
     ctx.fillStyle = "#111";
     ctx.fill();
@@ -283,6 +283,9 @@ try{
   const saved = localStorage.getItem("kia_cat_name");
   if(saved && nameInput){ nameInput.value = saved }
 }catch(_){}
+if(nameInput){
+  nameInput.addEventListener("keydown",function(e){ if(e.key==="Enter"){ start(); } });
+}
 
 function update(dt) {
   if (!running) return;
@@ -396,7 +399,6 @@ const shareLink=document.getElementById("shareLink");
 const qrImg=document.getElementById("qrImg");
 const copyBtn=document.getElementById("copyBtn");
 const closeShare=document.getElementById("closeShare");
-const dlBtn = document.getElementById("downloadQR");
 function buildShareURL(){
   const u = new URL(location.href);
   if(playerName) u.searchParams.set("n", playerName);
@@ -405,12 +407,11 @@ function buildShareURL(){
 }
 function openShare(){
   if(!playerName){
-    start(); // 将触发校验并聚焦昵称输入
+    start();
     if(!playerName) return;
   }
   const url=buildShareURL();
   shareLink.value=url;
-  // 通过外部API生成QR，再绘制到本地canvas并叠加文字，生成可保存图片
   const qrUrl="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data="+encodeURIComponent(url);
   const img=new Image();
   img.crossOrigin="anonymous";
@@ -430,11 +431,8 @@ function openShare(){
     try{
       const data=c.toDataURL("image/png");
       qrImg.src=data;
-      if(dlBtn){ dlBtn.onclick=()=>{ const a=document.createElement("a"); a.href=data; a.download=`KiasCat_${playerName||"player"}_${best}.png`; a.click(); } }
     }catch(_){
-      // 回退为直接显示外部二维码
       qrImg.src=qrUrl;
-      if(dlBtn){ dlBtn.onclick=()=>{ window.open(qrUrl, "_blank"); } }
     }
   };
   img.onerror=()=>{ qrImg.src=qrUrl };
