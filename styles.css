@@ -1,0 +1,49 @@
+html,body{
+  margin:0;
+  padding:0;
+  background:#f7f7f7;
+  color:#222;
+  font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,PingFang SC,Microsoft YaHei,sans-serif;
+  height:100%;
+}
+.wrap{
+  height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  gap:16px;
+}
+#game{
+  background:#fff;
+  border:1px solid #e5e5e5;
+  image-rendering:pixelated;
+}
+.hud{
+  width:800px;
+  display:flex;
+  justify-content:space-between;
+  font-size:14px;
+  color:#444;
+}
+#overlay{
+  position:absolute;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  background:rgba(255,255,255,0.9);
+  border:1px solid #e5e5e5;
+  padding:18px 20px;
+  border-radius:8px;
+  text-align:center;
+  user-select:none;
+}
+.title{
+  font-size:18px;
+  margin-bottom:6px;
+}
+.tip{
+  font-size:13px;
+  color:#666;
+}
+
