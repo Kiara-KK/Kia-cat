@@ -3,6 +3,8 @@ const ctx = canvas.getContext("2d");
 const scoreEl = document.getElementById("score");
 const statusEl = document.getElementById("status");
 const overlay = document.getElementById("overlay");
+const nameInput = document.getElementById("playerName");
+const startBtn = document.getElementById("startBtn");
 
 let dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
 function fitCanvas() {
@@ -34,6 +36,7 @@ let clouds = [];
 let hearts = [];
 
 let inputs = { down: false, wasDown: false };
+let playerName = "";
 
 function rand(a, b) { return Math.random() * (b - a) + a; }
 function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
@@ -252,7 +255,34 @@ function reset() {
 }
 reset();
 
-function start() { started = true; running = true; overlay.style.display = "none"; }
+function loadBestForName(name){
+  try{
+    const v = localStorage.getItem("kia_cat_best_"+name);
+    return v? parseInt(v,10)||0 : 0;
+  }catch(_){ return 0 }
+}
+function saveBestForName(name,value){
+  try{ localStorage.setItem("kia_cat_best_"+name,String(value)) }catch(_){}
+}
+function start() {
+  if(!playerName){
+    const v = (nameInput && nameInput.value || "").trim();
+    if(!v){
+      if(nameInput){ nameInput.focus(); }
+      return;
+    }
+    playerName = v;
+    try{ localStorage.setItem("kia_cat_name", playerName) }catch(_){}
+    best = loadBestForName(playerName);
+    statusEl.textContent = "BEST " + best;
+  }
+  started = true; running = true; overlay.style.display = "none";
+}
+// prefill name
+try{
+  const saved = localStorage.getItem("kia_cat_name");
+  if(saved && nameInput){ nameInput.value = saved }
+}catch(_){}
 
 function update(dt) {
   if (!running) return;
@@ -272,6 +302,10 @@ function update(dt) {
       running = false;
       gameOver = true;
       best = Math.max(best, Math.floor(score));
+      if(playerName && best){
+        const prev = loadBestForName(playerName);
+        if(best>prev) saveBestForName(playerName,best);
+      }
       statusEl.textContent = "BEST " + best;
       overlay.style.display = "";
       overlay.querySelector(".title").textContent = "游戏结束，点击或按空格重来";
@@ -353,6 +387,7 @@ canvas.addEventListener("pointerup", onPointer);
 canvas.addEventListener("pointerleave", () => { inputs.down = false; });
 document.addEventListener("visibilitychange", () => { if (document.hidden) inputs.down = false; });
 statusEl.textContent = "BEST 0";
+if(startBtn){ startBtn.addEventListener("click", start); }
 
 const shareBtn=document.getElementById("shareBtn");
 const shareMask=document.getElementById("shareMask");
@@ -361,11 +396,49 @@ const shareLink=document.getElementById("shareLink");
 const qrImg=document.getElementById("qrImg");
 const copyBtn=document.getElementById("copyBtn");
 const closeShare=document.getElementById("closeShare");
+const dlBtn = document.getElementById("downloadQR");
+function buildShareURL(){
+  const u = new URL(location.href);
+  if(playerName) u.searchParams.set("n", playerName);
+  if(best) u.searchParams.set("s", String(best));
+  return u.href;
+}
 function openShare(){
-  const url=location.href;
+  if(!playerName){
+    start(); // 将触发校验并聚焦昵称输入
+    if(!playerName) return;
+  }
+  const url=buildShareURL();
   shareLink.value=url;
-  const api="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data="+encodeURIComponent(url);
-  qrImg.src=api;
+  // 通过外部API生成QR，再绘制到本地canvas并叠加文字，生成可保存图片
+  const qrUrl="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data="+encodeURIComponent(url);
+  const img=new Image();
+  img.crossOrigin="anonymous";
+  img.onload=()=>{
+    const c=document.createElement("canvas");
+    const W=260,H=320;
+    c.width=W; c.height=H;
+    const g=c.getContext("2d");
+    g.fillStyle="#fff"; g.fillRect(0,0,W,H);
+    g.drawImage(img, (W-220)/2, 18, 220, 220);
+    g.fillStyle="#111";
+    g.textAlign="center";
+    g.font="bold 16px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,PingFang SC,Microsoft YaHei,sans-serif";
+    g.fillText("玩家: "+playerName, W/2, 260);
+    g.font="14px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,PingFang SC,Microsoft YaHei,sans-serif";
+    g.fillText("最高分: "+best, W/2, 286);
+    try{
+      const data=c.toDataURL("image/png");
+      qrImg.src=data;
+      if(dlBtn){ dlBtn.onclick=()=>{ const a=document.createElement("a"); a.href=data; a.download=`KiasCat_${playerName||"player"}_${best}.png`; a.click(); } }
+    }catch(_){
+      // 回退为直接显示外部二维码
+      qrImg.src=qrUrl;
+      if(dlBtn){ dlBtn.onclick=()=>{ window.open(qrUrl, "_blank"); } }
+    }
+  };
+  img.onerror=()=>{ qrImg.src=qrUrl };
+  img.src=qrUrl;
   shareMask.style.display="";
   sharePanel.style.display="";
 }

@@ -16,7 +16,11 @@
     <canvas id="game" width="800" height="220"></canvas>
     <div id="overlay">
       <div class="title">Kia's Cat · 点击或按空格开始</div>
-      <div class="tip">上箭头/空格跳跃，可二段跳；长按可更高</div>
+      <div class="tip">输入昵称后开始：上箭头/空格跳跃（可二段跳）</div>
+      <div class="player-row">
+        <input id="playerName" class="player-input" placeholder="输入你的昵称" maxlength="20" />
+        <button id="startBtn" class="player-start">开始</button>
+      </div>
     </div>
     <div id="shareMask" class="share-mask" style="display:none"></div>
     <div id="sharePanel" class="share-panel" style="display:none">
@@ -26,6 +30,7 @@
         <input id="shareLink" class="share-link" readonly />
         <button id="copyBtn" class="share-copy">复制链接</button>
       </div>
+      <button id="downloadQR" class="share-copy">下载二维码</button>
       <button id="closeShare" class="share-close">关闭</button>
     </div>
   </div>
